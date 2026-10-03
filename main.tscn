@@ -1,0 +1,206 @@
+[gd_scene format=3 uid="uid://dfrm5q5v8lq3m"]
+
+[ext_resource type="Script" uid="uid://cwnabib2r2wb7" path="res://drone_1.gd" id="1_0xm2m"]
+[ext_resource type="Script" uid="uid://7ri1xkhq0w5t" path="res://lazer_beam.gd" id="2_1bvp3"]
+[ext_resource type="Script" uid="uid://bpdl10kvriw3i" path="res://network_manager.gd" id="2_h2yge"]
+[ext_resource type="Script" uid="uid://bsc4o4y4hwg6h" path="res://beacon.gd" id="3_1bvp3"]
+[ext_resource type="Script" uid="uid://cmn8frvb7rdah" path="res://host_platform_b.gd" id="3_272bh"]
+[ext_resource type="Script" uid="uid://c0wlthlc7qhlm" path="res://gimbal.gd" id="3_lquwl"]
+[ext_resource type="Script" uid="uid://dgooipl5ry4dn" path="res://beacon_detector.gd" id="4_7mycd"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_lfkbx"]
+size = Vector2(100, 100)
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_vicex"]
+
+[sub_resource type="Sky" id="Sky_aui74"]
+sky_material = SubResource("ProceduralSkyMaterial_vicex")
+
+[sub_resource type="Environment" id="Environment_lfkbx"]
+background_mode = 2
+sky = SubResource("Sky_aui74")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1bvp3"]
+albedo_color = Color(0, 1, 1, 1)
+emission_enabled = true
+emission = Color(0, 1, 1, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lfkbx"]
+albedo_color = Color(0, 1, 1, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_lfkbx"]
+material = SubResource("StandardMaterial3D_lfkbx")
+radius = 0.8
+height = 1.6
+
+[sub_resource type="BoxMesh" id="BoxMesh_lfkbx"]
+size = Vector3(0.8, 0.2, 0.8)
+
+[sub_resource type="BoxMesh" id="BoxMesh_h2yge"]
+size = Vector3(1.1, 0.08, 0.12)
+
+[sub_resource type="BoxMesh" id="BoxMesh_1bvp3"]
+size = Vector3(1.1, 0.08, 0.12)
+
+[sub_resource type="BoxMesh" id="BoxMesh_lquwl"]
+size = Vector3(1.1, 0.08, 0.12)
+
+[sub_resource type="BoxMesh" id="BoxMesh_7mycd"]
+size = Vector3(1.1, 0.08, 0.12)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_vicex"]
+top_radius = 0.12
+bottom_radius = 0.12
+height = 0.1
+
+[sub_resource type="BoxMesh" id="BoxMesh_aui74"]
+size = Vector3(0.65, 0.025, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_vicex"]
+size = Vector3(0.65, 0.025, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_77to7"]
+size = Vector3(0.65, 0.025, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_1pkoy"]
+size = Vector3(0.65, 0.025, 0.08)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_h2yge"]
+albedo_color = Color(0.88845503, 0, 0.016150754, 1)
+emission_enabled = true
+emission = Color(0.8439394, 0, 0, 1)
+emission_energy_multiplier = 5.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_lfkbx"]
+material = SubResource("StandardMaterial3D_h2yge")
+top_radius = 0.08
+bottom_radius = 0.08
+height = 5.0
+radial_segments = 16
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_lfkbx"]
+size = Vector3(1, 0.3, 1)
+
+[node name="Main" type="Node3D" unique_id=123677234]
+
+[node name="ground" type="MeshInstance3D" parent="." unique_id=1849689650]
+mesh = SubResource("PlaneMesh_lfkbx")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=896616783]
+environment = SubResource("Environment_lfkbx")
+
+[node name="sun" type="DirectionalLight3D" parent="." unique_id=80478407]
+transform = Transform3D(1, 0, 0, 0, 0.64278764, 0.76604444, 0, -0.76604444, 0.64278764, 0, 0, 0)
+
+[node name="network manager" type="Node" parent="." unique_id=987099853]
+script = ExtResource("2_h2yge")
+
+[node name="target platformA" type="Node3D" parent="." unique_id=1551908127]
+
+[node name="beacon" type="MeshInstance3D" parent="target platformA" unique_id=421362939]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, -20)
+material_override = SubResource("StandardMaterial3D_1bvp3")
+mesh = SubResource("SphereMesh_lfkbx")
+script = ExtResource("3_1bvp3")
+trajectory_mode = "RANDOM"
+
+[node name="HostPlatformB" type="Node3D" parent="." unique_id=817448668]
+script = ExtResource("3_272bh")
+movement_enabled = true
+
+[node name="drone1" type="CharacterBody3D" parent="HostPlatformB" unique_id=481217993]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 8, 0)
+motion_mode = 1
+script = ExtResource("1_0xm2m")
+
+[node name="body" type="MeshInstance3D" parent="HostPlatformB/drone1" unique_id=2111177418]
+transform = Transform3D(1.8, 0, 0, 0, 1.8, 0, 0, 0, 1.8, 0, 0, 0)
+mesh = SubResource("BoxMesh_lfkbx")
+
+[node name="arm1" type="MeshInstance3D" parent="HostPlatformB/drone1/body" unique_id=126287602]
+transform = Transform3D(0.70710677, 0, 0.70710677, 0, 1, 0, -0.70710677, 0, 0.70710677, 0.4, 0, -0.4)
+mesh = SubResource("BoxMesh_h2yge")
+
+[node name="arm2" type="MeshInstance3D" parent="HostPlatformB/drone1/body" unique_id=411281145]
+transform = Transform3D(0.70710677, 0, -0.70710677, 0, 1, 0, 0.70710677, 0, 0.70710677, 0.4, 0, 0.4)
+mesh = SubResource("BoxMesh_1bvp3")
+
+[node name="arm3" type="MeshInstance3D" parent="HostPlatformB/drone1/body" unique_id=1629949505]
+transform = Transform3D(-0.70710677, 0, -0.70710677, 0, 1, 0, 0.70710677, 0, -0.70710677, -0.4, 0, 0.4)
+mesh = SubResource("BoxMesh_lquwl")
+
+[node name="arm4" type="MeshInstance3D" parent="HostPlatformB/drone1/body" unique_id=988744221]
+transform = Transform3D(-0.70710677, 0, 0.70710677, 0, 1, 0, -0.70710677, 0, -0.70710677, -0.4, 0, -0.4)
+mesh = SubResource("BoxMesh_7mycd")
+
+[node name="motor1" type="MeshInstance3D" parent="HostPlatformB/drone1/body" unique_id=1907810909]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.7, 0.08, -0.7)
+mesh = SubResource("CylinderMesh_vicex")
+
+[node name="propeller1" type="MeshInstance3D" parent="HostPlatformB/drone1/body/motor1" unique_id=1763530806]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
+mesh = SubResource("BoxMesh_aui74")
+
+[node name="propeller2" type="MeshInstance3D" parent="HostPlatformB/drone1/body/motor1" unique_id=1343056934]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0, 0.12, 0)
+mesh = SubResource("BoxMesh_aui74")
+
+[node name="motor2" type="MeshInstance3D" parent="HostPlatformB/drone1/body" unique_id=2105118814]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.7, 0.08, -0.7)
+mesh = SubResource("CylinderMesh_vicex")
+
+[node name="propeller1" type="MeshInstance3D" parent="HostPlatformB/drone1/body/motor2" unique_id=1046540844]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
+mesh = SubResource("BoxMesh_vicex")
+
+[node name="propeller2" type="MeshInstance3D" parent="HostPlatformB/drone1/body/motor2" unique_id=1268019312]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0, 0.12, 0)
+mesh = SubResource("BoxMesh_vicex")
+
+[node name="motor3" type="MeshInstance3D" parent="HostPlatformB/drone1/body" unique_id=1680811520]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.7, 0.08, 0.7)
+mesh = SubResource("CylinderMesh_vicex")
+
+[node name="propeller1" type="MeshInstance3D" parent="HostPlatformB/drone1/body/motor3" unique_id=271544350]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
+mesh = SubResource("BoxMesh_77to7")
+
+[node name="propeller2" type="MeshInstance3D" parent="HostPlatformB/drone1/body/motor3" unique_id=1209533919]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0, 0.12, 0)
+mesh = SubResource("BoxMesh_77to7")
+
+[node name="motor4" type="MeshInstance3D" parent="HostPlatformB/drone1/body" unique_id=1331480723]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.7, 0.08, 0.7)
+mesh = SubResource("CylinderMesh_vicex")
+
+[node name="propeller1" type="MeshInstance3D" parent="HostPlatformB/drone1/body/motor4" unique_id=922887246]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
+mesh = SubResource("BoxMesh_1pkoy")
+
+[node name="propeller2" type="MeshInstance3D" parent="HostPlatformB/drone1/body/motor4" unique_id=676318760]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0, 0.12, 0)
+mesh = SubResource("BoxMesh_1pkoy")
+
+[node name="lazer beam" type="MeshInstance3D" parent="HostPlatformB/drone1" unique_id=214338834]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0)
+mesh = SubResource("CylinderMesh_lfkbx")
+script = ExtResource("2_1bvp3")
+target_path = NodePath("../../../target platformA/beacon")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HostPlatformB/drone1" unique_id=222867376]
+shape = SubResource("BoxShape3D_lfkbx")
+
+[node name="gimbal" type="Node3D" parent="HostPlatformB/drone1" unique_id=1613418321]
+script = ExtResource("3_lquwl")
+
+[node name="pan" type="Node3D" parent="HostPlatformB/drone1/gimbal" unique_id=400507060]
+
+[node name="tilt" type="Node3D" parent="HostPlatformB/drone1/gimbal/pan" unique_id=320254634]
+
+[node name="droneCamera" type="Camera3D" parent="HostPlatformB/drone1/gimbal/pan/tilt" unique_id=1879417993]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 6)
+current = true
+
+[node name="beacon detector" type="Node" parent="HostPlatformB/drone1/gimbal/pan/tilt/droneCamera" unique_id=364235567]
+script = ExtResource("4_7mycd")

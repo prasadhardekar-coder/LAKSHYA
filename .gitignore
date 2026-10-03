@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# Python cache and build output
+.pytest_cache/
+.mypy_cache/
+dist/
+build/
+*.egg-info/
+
+# Logs and generated data
+*.log
+*.csv
+*.csv.import
+*.json
+
+# Generated outputs (keep output/ because it contains source code)
+outputs/
+runs/
+results/
+
+# Temporary files
+tmp/
+temp/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Godot generated files
+.godot/
+.import/
+.godot.zip
+
+# Local environment/config
+.env
+
+# Large video files
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# Large model files - enable if model weights move to Git LFS
+# *.pt
+# *.onnx
+
+# Keep the runtime model in models/; this root-level copy is redundant
+/yolov8n.pt
+
+# Windows executable builds
+# *.exe

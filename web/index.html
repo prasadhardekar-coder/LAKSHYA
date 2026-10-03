@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#09131a">
+  <title>LAKSHYA | Tracking Console</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #09131a;
+      --rail: #0b171f;
+      --panel: #101e27;
+      --panel-raised: #142630;
+      --line: #273b46;
+      --text: #edf5f6;
+      --muted: #91a5ab;
+      --cyan: #59d5d0;
+      --green: #9ad3a8;
+      --amber: #e8bb70;
+      --red: #e78d84;
+      --radius: 7px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: radial-gradient(ellipse at 76% -15%, #183943 0, transparent 37%), var(--bg);
+      color: var(--text);
+      font: 14px/1.45 "Segoe UI", Tahoma, sans-serif;
+    }
+    button, a { font: inherit; }
+    .app { min-height: 100vh; display: grid; grid-template-columns: 226px minmax(0, 1fr); }
+    .rail {
+      position: sticky; top: 0; height: 100vh; padding: 22px 14px;
+      background: rgb(8 19 26 / 88%); border-right: 1px solid var(--line);
+      display: flex; flex-direction: column;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 2px 5px 25px; }
+    .mark {
+      width: 38px; aspect-ratio: 1; display: grid; place-items: center;
+      color: var(--cyan); border: 1px solid #3b8988; border-radius: 7px;
+      font-weight: 800; font-size: 18px;
+    }
+    .brand strong { display: block; font-size: 14px; letter-spacing: .08em; }
+    .brand small { color: var(--muted); font-size: 9px; }
+    .nav { display: grid; gap: 5px; }
+    .nav a {
+      display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 11px;
+      text-decoration: none; color: var(--muted); border: 1px solid transparent; border-radius: 6px;
+    }
+    .nav a:hover, .nav a[aria-current="page"] { color: var(--text); background: #132a33; border-color: #28505a; }
+    .nav .glyph { width: 16px; color: var(--cyan); text-align: center; font-size: 13px; }
+    .side-status { margin-top: auto; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: #0e1c24; }
+    .eyebrow { color: var(--muted); font-size: 10px; letter-spacing: .1em; }
+    .status-row { display: flex; justify-content: space-between; gap: 8px; margin-top: 9px; color: var(--muted); font-size: 11px; }
+    .status-value { color: var(--text); }
+    .dot { display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; background: #6d7e83; }
+    .dot.on { background: var(--green); box-shadow: 0 0 9px rgb(154 211 168 / 45%); }
+    .dot.warn { background: var(--amber); }
+    main { width: min(1600px, 100%); margin: 0 auto; padding: 25px clamp(16px, 2vw, 30px) 32px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-bottom: 20px; }
+    h1 { margin: 0; font-size: 23px; font-weight: 650; }
+    .subtitle { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+    .top-actions { display: flex; align-items: center; gap: 9px; }
+    .pill { padding: 6px 9px; border: 1px solid #67543a; border-radius: 5px; color: var(--amber); background: #241f16; font-size: 10px; white-space: nowrap; }
+    .button {
+      min-height: 34px; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      padding: 0 11px; color: var(--text); background: #18363c; border: 1px solid #34636a;
+      border-radius: 5px; text-decoration: none; cursor: pointer;
+    }
+    .button:hover { background: #20454a; }
+    .button.secondary { background: #13212a; border-color: var(--line); }
+    .layout { display: grid; grid-template-columns: minmax(360px, 1.35fr) minmax(320px, .9fr); gap: 15px; align-items: start; }
+    .stack { display: grid; gap: 15px; min-width: 0; }
+    .panel { min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius); background: linear-gradient(160deg, #14242d, #0e1a22 70%); }
+    .panel-head { min-height: 46px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 14px; border-bottom: 1px solid var(--line); }
+    .panel-head h2 { margin: 0; font-size: 11px; font-weight: 700; letter-spacing: .1em; }
+    .panel-head span { color: var(--muted); font-size: 10px; }
+    .feed-wrap { padding: 12px; }
+    .feed {
+      position: relative; overflow: hidden; display: grid; place-items: center; width: 100%; aspect-ratio: 4 / 3;
+      background: #050b0f; border: 1px solid #263a43; border-radius: 4px;
+    }
+    .feed img { width: 100%; height: 100%; object-fit: contain; }
+    .crosshair { position: absolute; inset: 0; pointer-events: none; }
+    .crosshair::before, .crosshair::after { content: ""; position: absolute; background: rgb(89 213 208 / 40%); }
+    .crosshair::before { width: 1px; height: 100%; left: 50%; }
+    .crosshair::after { height: 1px; width: 100%; top: 50%; }
+    .target { position: absolute; width: 20px; height: 20px; border: 1px solid var(--amber); transform: translate(-50%, -50%); display: none; }
+    .feed-empty { position: absolute; max-width: 260px; padding: 12px; color: var(--muted); text-align: center; font-size: 12px; background: rgb(5 11 15 / 74%); }
+    .feed-meta { display: flex; justify-content: space-between; gap: 10px; padding: 10px 2px 0; color: var(--muted); font-size: 10px; }
+    .live-label { color: var(--green); }
+    .metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 11px; }
+    .metric { min-height: 71px; padding: 10px; border: 1px solid #263942; border-radius: 5px; background: rgb(5 13 18 / 28%); }
+    .metric-label { color: var(--muted); font-size: 9px; letter-spacing: .09em; }
+    .metric-value { margin-top: 6px; color: var(--text); font-size: 20px; font-variant-numeric: tabular-nums; }
+    .metric-value small { color: var(--muted); font-size: 10px; }
+    .accent { color: var(--cyan); }
+    .good { color: var(--green); }
+    .chart-wrap { padding: 10px 12px 12px; }
+    canvas { display: block; width: 100%; height: 150px; }
+    .legend { display: flex; gap: 15px; color: var(--muted); font-size: 10px; }
+    .legend i { display: inline-block; width: 8px; height: 2px; margin: 0 5px 3px 0; background: var(--cyan); }
+    .legend .y i { background: var(--amber); }
+    .event-list { max-height: 220px; overflow: auto; padding: 4px 14px 10px; }
+    .event { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid rgb(39 59 70 / 70%); font-size: 11px; }
+    .event:last-child { border: 0; }
+    .event time { flex: 0 0 auto; color: var(--muted); font-size: 9px; }
+    .tag { color: var(--cyan); font-size: 9px; letter-spacing: .08em; }
+    .hint { margin: 0; padding: 0 14px 13px; color: var(--muted); font-size: 10px; }
+    @media (max-width: 960px) {
+      .app { grid-template-columns: 68px minmax(0, 1fr); }
+      .rail { padding: 16px 8px; align-items: center; }
+      .brand { padding: 0 0 22px; }
+      .brand > div:last-child, .nav .label, .side-status { display: none; }
+      .nav { width: 100%; }
+      .nav a { justify-content: center; padding: 0; }
+      .nav .glyph { font-size: 16px; }
+      .layout { grid-template-columns: minmax(0, 1fr); }
+    }
+    @media (max-width: 560px) {
+      .app { display: block; }
+      .rail { position: static; width: 100%; height: auto; display: flex; flex-direction: row; justify-content: space-between; padding: 8px 12px; border-right: 0; border-bottom: 1px solid var(--line); }
+      .brand { padding: 0; }
+      .brand > div:last-child { display: block; }
+      .mark { width: 32px; }
+      .nav { width: auto; display: flex; gap: 3px; }
+      .nav a { width: 36px; min-height: 36px; }
+      .nav .label { display: none; }
+      main { padding: 17px 12px 24px; }
+      .topbar { align-items: flex-start; }
+      h1 { font-size: 19px; }
+      .top-actions { flex-direction: column; align-items: flex-end; }
+      .layout { grid-template-columns: minmax(0, 1fr); }
+      .metric { min-height: 65px; }
+      .metric-value { font-size: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="rail">
+      <div class="brand"><div class="mark">L</div><div><strong>LAKSHYA</strong><small>FSOC TRACKING</small></div></div>
+      <nav class="nav" aria-label="Dashboard sections">
+        <a href="#overview" aria-current="page" title="Overview"><span class="glyph">◫</span><span class="label">Overview</span></a>
+        <a href="#live" title="Live camera"><span class="glyph">◎</span><span class="label">Live camera</span></a>
+        <a href="#metrics" title="Telemetry"><span class="glyph">⌁</span><span class="label">Telemetry</span></a>
+        <a href="#events" title="Recovery events"><span class="glyph">≋</span><span class="label">Recovery events</span></a>
+      </nav>
+      <section class="side-status" aria-label="System status">
+        <div class="eyebrow">SYSTEM STATUS</div>
+        <div class="status-row"><span><i class="dot" id="godotDot"></i>Godot feed</span><span class="status-value" id="godotStatus">Waiting</span></div>
+        <div class="status-row"><span><i class="dot on" id="pythonDot"></i>Python</span><span class="status-value" id="pythonStatus">Online</span></div>
+        <div class="status-row"><span><i class="dot" id="trackerDot"></i>Tracker</span><span class="status-value" id="trackerStatus">Waiting</span></div>
+      </section>
+    </aside>
+
+    <main id="overview">
+      <header class="topbar">
+        <div><h1>Virtual Camera Tracking Console</h1><p class="subtitle">Live Godot camera feed and Python tracking telemetry</p></div>
+        <div class="top-actions"><span class="pill" id="systemBadge">CONNECTING</span><button class="button secondary" id="refresh" type="button" title="Refresh telemetry">↻ <span>Refresh</span></button></div>
+      </header>
+
+      <div class="layout">
+        <div class="stack">
+          <section class="panel" id="live">
+            <div class="panel-head"><h2>LIVE CAMERA</h2><span>640 × 480 · Godot viewport</span></div>
+            <div class="feed-wrap">
+              <div class="feed">
+                <img id="frame" alt="Live camera frame from Godot" hidden>
+                <div class="crosshair"></div><div class="target" id="target"></div>
+                <div class="feed-empty" id="feedEmpty">Waiting for the first frame from Godot</div>
+              </div>
+              <div class="feed-meta"><span id="feedState">No frame received</span><span class="live-label" id="feedRate">● LIVE</span></div>
+            </div>
+          </section>
+
+          <section class="panel" id="metrics">
+            <div class="panel-head"><h2>TRACKING ERROR</h2><span>filtered pixel offset from image center</span></div>
+            <div class="chart-wrap"><canvas id="chart" aria-label="Recent horizontal and vertical tracking error"></canvas><div class="legend"><span><i></i>X error</span><span class="y"><i></i>Y error</span></div></div>
+          </section>
+        </div>
+
+        <div class="stack">
+          <section class="panel">
+            <div class="panel-head"><h2>LIVE TELEMETRY</h2><span id="updated">Waiting for controller</span></div>
+            <div class="metrics">
+              <div class="metric"><div class="metric-label">TRACKING STATE</div><div class="metric-value good" id="state">WAITING</div></div>
+              <div class="metric"><div class="metric-label">DETECTION SOURCE</div><div class="metric-value accent" id="detector">—</div></div>
+              <div class="metric"><div class="metric-label">CONFIDENCE</div><div class="metric-value" id="confidence">—</div></div>
+              <div class="metric"><div class="metric-label">PROCESSING FPS</div><div class="metric-value" id="fps">— <small>fps</small></div></div>
+              <div class="metric"><div class="metric-label">ERROR X</div><div class="metric-value" id="errorX">— <small>px</small></div></div>
+              <div class="metric"><div class="metric-label">ERROR Y</div><div class="metric-value" id="errorY">— <small>px</small></div></div>
+              <div class="metric"><div class="metric-label">ANGULAR ERROR</div><div class="metric-value" id="angular">— <small>deg</small></div></div>
+              <div class="metric"><div class="metric-label">CENTROID</div><div class="metric-value" id="centroid">— <small>px</small></div></div>
+              <div class="metric"><div class="metric-label">PAN COMMAND</div><div class="metric-value" id="pan">— <small>deg/s</small></div></div>
+              <div class="metric"><div class="metric-label">TILT COMMAND</div><div class="metric-value" id="tilt">— <small>deg/s</small></div></div>
+            </div>
+          </section>
+
+          <section class="panel" id="events">
+            <div class="panel-head"><h2>RECOVERY EVENTS</h2><a class="button secondary" href="/api/frame.jpg?download=1" title="Download current frame">↓ <span>Frame</span></a></div>
+            <div class="event-list" id="eventList"><div class="event"><span>Dashboard started; waiting for frames</span><span class="tag">READY</span></div></div>
+            <p class="hint">Press T in the Godot window to apply a pan disturbance.</p>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const byId = (id) => document.getElementById(id);
+    const history = [];
+    const maxHistory = 90;
+    let previousSource = null;
+    let previousState = null;
+    let previousRecoveryCount = 0;
+    let lastFrameVersion = 0;
+    let lastFrameFetch = 0;
+
+    function addEvent(message, tag = 'INFO') {
+      const row = document.createElement('div');
+      row.className = 'event';
+      const text = document.createElement('span');
+      text.textContent = message;
+      const label = document.createElement('span');
+      label.className = 'tag';
+      label.textContent = tag;
+      row.append(text, label);
+      byId('eventList').prepend(row);
+      while (byId('eventList').children.length > 30) byId('eventList').lastElementChild.remove();
+    }
+
+    function setStatus(id, dotId, text, online) {
+      byId(id).textContent = text;
+      byId(dotId).classList.toggle('on', online);
+      byId(dotId).classList.toggle('warn', !online);
+    }
+
+    function setMetric(id, value, digits = 1) {
+      byId(id).textContent = Number.isFinite(value) ? value.toFixed(digits) : '—';
+    }
+
+    function drawChart() {
+      const canvas = byId('chart');
+      const rect = canvas.getBoundingClientRect();
+      if (!rect.width) return;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(150 * dpr);
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const width = rect.width;
+      const height = 150;
+      ctx.clearRect(0, 0, width, height);
+      const scale = Math.max(20, ...history.flatMap((point) => [Math.abs(point.x), Math.abs(point.y)]));
+      ctx.strokeStyle = 'rgba(200,230,232,.12)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 4; i++) {
+        const y = height * i / 4;
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
+      }
+      const zero = height / 2;
+      ctx.strokeStyle = 'rgba(200,230,232,.34)';
+      ctx.beginPath(); ctx.moveTo(0, zero); ctx.lineTo(width, zero); ctx.stroke();
+      if (history.length < 2) return;
+      for (const axis of ['x', 'y']) {
+        ctx.strokeStyle = axis === 'x' ? '#59d5d0' : '#e8bb70';
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        history.forEach((point, index) => {
+          const x = index / (history.length - 1) * width;
+          const y = zero - point[axis] / scale * (height * .44);
+          index ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+        });
+        ctx.stroke();
+      }
+    }
+
+    async function refreshTelemetry() {
+      try {
+        const response = await fetch('/api/state', { cache: 'no-store' });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        const godotOnline = Boolean(data.godot_connected);
+        setStatus('godotStatus', 'godotDot', godotOnline ? 'Connected' : 'No frames', godotOnline);
+        setStatus('pythonStatus', 'pythonDot', data.controller_connected ? 'Online' : 'Waiting', Boolean(data.controller_connected));
+        setStatus('trackerStatus', 'trackerDot', data.tracking_state || 'Waiting', data.tracking_state === 'TRACKING');
+        byId('systemBadge').textContent = godotOnline ? 'LIVE SYSTEM' : 'WAITING FOR GODOT';
+        byId('systemBadge').style.color = godotOnline ? 'var(--green)' : 'var(--amber)';
+        byId('state').textContent = data.tracking_state || 'WAITING';
+        byId('detector').textContent = data.detector || '—';
+        setMetric('confidence', data.confidence, 2);
+        setMetric('fps', data.fps, 1);
+        setMetric('errorX', data.error_x_px, 1);
+        setMetric('errorY', data.error_y_px, 1);
+        setMetric('angular', data.angular_error_deg, 3);
+        setMetric('pan', data.pan_command_dps, 2);
+        setMetric('tilt', data.tilt_command_dps, 2);
+        if (Number.isFinite(data.centroid_x) && Number.isFinite(data.centroid_y)) {
+          byId('centroid').innerHTML = `${data.centroid_x.toFixed(0)}, ${data.centroid_y.toFixed(0)} <small>px</small>`;
+          byId('target').style.display = 'block';
+          byId('target').style.left = `${Math.max(0, Math.min(100, data.centroid_x / 640 * 100))}%`;
+          byId('target').style.top = `${Math.max(0, Math.min(100, data.centroid_y / 480 * 100))}%`;
+        } else {
+          byId('centroid').innerHTML = '— <small>px</small>';
+          byId('target').style.display = 'none';
+        }
+        byId('updated').textContent = data.updated_at ? new Date(data.updated_at * 1000).toLocaleTimeString() : 'Waiting for controller';
+        byId('feedState').textContent = godotOnline ? 'Godot frame stream active' : 'Waiting for Godot frames';
+        byId('feedEmpty').hidden = Boolean(godotOnline && lastFrameVersion > 0);
+        byId('feedRate').style.visibility = godotOnline ? 'visible' : 'hidden';
+
+        if (Number.isFinite(data.error_x_px) && Number.isFinite(data.error_y_px)) {
+          history.push({ x: data.error_x_px, y: data.error_y_px });
+          if (history.length > maxHistory) history.shift();
+          drawChart();
+        }
+        if (data.detector && data.detector !== previousSource) {
+          addEvent(`Detection source: ${data.detector}`, data.detector.toUpperCase());
+          previousSource = data.detector;
+        }
+        if (data.tracking_state && data.tracking_state !== previousState) {
+          addEvent(`Tracking state: ${data.tracking_state}`, data.tracking_state);
+          previousState = data.tracking_state;
+        }
+        const recoveries = Array.isArray(data.recoveries) ? data.recoveries : [];
+        if (recoveries.length > previousRecoveryCount) {
+          for (const recovery of recoveries.slice(previousRecoveryCount)) {
+            addEvent(`Recovered in ${Number(recovery.recovery_time).toFixed(2)} s · peak ${Number(recovery.max_error).toFixed(0)} px`, 'RECOVERED');
+          }
+          previousRecoveryCount = recoveries.length;
+        }
+      } catch (error) {
+        byId('systemBadge').textContent = 'CONTROLLER OFFLINE';
+        byId('updated').textContent = 'No telemetry connection';
+        setStatus('godotStatus', 'godotDot', 'Unavailable', false);
+        setStatus('pythonStatus', 'pythonDot', 'Unavailable', false);
+        setStatus('trackerStatus', 'trackerDot', 'Unavailable', false);
+      }
+    }
+
+    async function refreshFrame() {
+      const now = Date.now();
+      if (now - lastFrameFetch < 180) return;
+      lastFrameFetch = now;
+      const image = byId('frame');
+      const nextVersion = now;
+      image.onload = () => {
+        lastFrameVersion = nextVersion;
+        image.hidden = false;
+        byId('feedEmpty').hidden = true;
+      };
+      image.onerror = () => {
+        if (!lastFrameVersion) byId('feedEmpty').hidden = false;
+      };
+      image.src = `/api/frame.jpg?v=${nextVersion}`;
+    }
+
+    byId('refresh').addEventListener('click', () => { refreshTelemetry(); refreshFrame(); });
+    window.addEventListener('resize', drawChart);
+    refreshTelemetry();
+    refreshFrame();
+    window.setInterval(refreshTelemetry, 400);
+    window.setInterval(refreshFrame, 250);
+  </script>
+</body>
+</html>
